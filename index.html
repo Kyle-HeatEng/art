@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Canvas Bird-Facebook Transition</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #211A1E; /* Set the initial background color */
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            cursor: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // Get the canvas element
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set the canvas size to match the window size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+  // Store the ghosts
+  const ghosts = [];
+
+        // Store the mouse position
+        let mouseX = 0;
+        let mouseY = 0;
+
+        // Update the mouse position
+        canvas.addEventListener('mousemove', function(event) {
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+        });
+                // Generate a random number within a range
+                function randomRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+  // Create a ghost object
+  function createGhost(x, y, opacity, speed) {
+            return {
+                x,
+                y,
+                opacity,
+                speed
+            };
+        }
+
+    // Spawn a new ghost
+    function spawnGhost() {
+        const x = randomRange(0, canvas.width);
+        const y = randomRange(0, canvas.height);
+        const opacity = 1;
+        const speed = randomRange(0.75, 0.01);
+
+        const ghost = createGhost(x, y, opacity, speed);
+        ghosts.push(ghost);
+    }
+
+    // Initialize the ghosts
+    for (let i = 0; i < 20; i++) {
+        spawnGhost();
+    }
+
+
+
+        // Oscillating colors for background, Twitter bird, and Facebook logo
+        const backgroundColors = ['#FDE74C', '#9BC53D', '#C3423F'];
+        let backgroundIndex = 0;
+        let birdColorIndex = 0;
+        let logoColorIndex = 0;
+
+        // Draw the bird or the Facebook logo at the mouse position
+        function drawBirdFacebookTransition() {
+            const size = 50;
+            const x = mouseX;
+            const y = mouseY;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+            const transitionProgress = Math.sin((Date.now() / 1000) * 0.5); // Five times faster transition
+
+            // Oscillate background color
+            const backgroundColor = backgroundColors[backgroundIndex];
+            document.body.style.backgroundColor = backgroundColor;
+
+            // Oscillate bird color
+            const birdColor = backgroundColor;
+            ctx.fillStyle = birdColor;
+
+            // Oscillate Facebook logo color
+            const logoColor = backgroundColor;
+            ctx.font = `${size * 2}px Arial`;
+            ctx.fillStyle = logoColor;
+
+            // Draw and update the ghosts
+            ghosts.forEach((ghost, index) => {
+                //ctx.fillStyle = `rgba(255, 255, 255, ${ghost.opacity})`;
+                ctx.beginPath();
+                ctx.arc(ghost.x, ghost.y, 10, 0, 2 * Math.PI);
+                ctx.closePath();
+                ctx.fill();
+
+                ghost.opacity -= ghost.speed;
+
+                if (ghost.opacity <= 0) {
+                    ghosts.splice(index, 1);
+                    spawnGhost();
+                }
+            });
+
+
+            if (transitionProgress < 0) {
+                // Draw the Twitter bird
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.arc(x, y, size, 0.75 * Math.PI, 1.25 * Math.PI, true);
+                ctx.lineTo(x - 2 * size, y - 3.5 * size);
+                ctx.arc(x - 3 * size, y - 3.5 * size, size / 2, 0.75 * Math.PI, 1.75 * Math.PI);
+                ctx.arc(x - 3 * size, y - 3.5 * size, size / 1.8, 0.75 * Math.PI, 1.75 * Math.PI, true);
+                ctx.lineTo(x - 3 * size, y - 3.5 * size - 3 * size);
+                ctx.lineTo(x - 3.5 * size, y - 3.5 * size - 3 * size);
+                ctx.lineTo(x - 3 * size, y - 3.5 * size - 3.5 * size);
+                ctx.lineTo(x - 2 * size, y - 3.5 * size - 3.5 * size);
+                ctx.lineTo(x, y - 2 * size);
+                ctx.arc(x, y - 2.5 * size, size / 2, 1.75 * Math.PI, 2.25 * Math.PI);
+                ctx.arc(x, y - 2.5 * size, size / 1.8, 1.75 * Math.PI, 2.25 * Math.PI, true);
+                ctx.lineTo(x, y - 2.5 * size - size);
+                ctx.lineTo(x + size, y - 2.5 * size - size);
+                ctx.lineTo(x + size, y - 2 * size);
+                ctx.arc(x, y, size, 0.25 * Math.PI, 0.75 * Math.PI, true);
+                ctx.closePath();
+            } else {
+                // Draw the Facebook logo (f)
+                const logoSize = size * 2;
+                ctx.fillText('f', x - logoSize / 2, y + logoSize / 2);
+            }
+
+            ctx.fill();
+
+            // Update the color indexes for the next frame
+            backgroundIndex = (backgroundIndex + 1) % backgroundColors.length;
+            birdColorIndex = (birdColorIndex + 1) % backgroundColors.length;
+            logoColorIndex = (logoColorIndex + 1) % backgroundColors.length;
+
+            requestAnimationFrame(drawBirdFacebookTransition); // Redraw the transition on each animation frame
+        }
+
+        // Start drawing the bird-Facebook transition
+        drawBirdFacebookTransition();
+    </script>
+</body>
+</html>
